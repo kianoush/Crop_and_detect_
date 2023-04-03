@@ -9,15 +9,11 @@ import pyshine as ps
 
 
 
-class Computer_Vision():
+class Computer_Vision:
     CNT = 0
     FRAMES_COUNT = 20
     ST = 0
     FPS = 0
-    # p1 = None
-    # p2 = None
-    # p3 = None
-    # p4 = None
 
     def __init__(self, video, ml_label):
         # define model
@@ -26,12 +22,8 @@ class Computer_Vision():
         self.prototxt_path = "./deploy.prototxt"
         self.model_path = "./mobilenet_iter_73000.caffemodel"
         self.net = cv2.dnn.readNetFromCaffe(self.prototxt_path, self.model_path)
-        self.p = 0
-        # self.p1 = None
-        # self.p2 = None
-        # self.p3 = None
-        # self.p4 = None
         self.ml_label = ml_label
+        self.points = []
 
 
 
@@ -91,25 +83,30 @@ class Computer_Vision():
     def get_duration(self, vid):
         return int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    def proccess(self, vid, ml_label):
+    def process(self, vid, ml_label):
         img, image = vid.read()
         image = self.process_frame_MobileNetSSD(image, ml_label)
+        image = cv2.resize(image, (617, 375), interpolation= cv2.INTER_LINEAR)
+        if self.points:
+            image = self.create_rectangle(self.points, image)
+            self.CNT += 1
+            if self.CNT >= 100:
+                self.points = []
+                self.CNT = 0
         if Computer_Vision.CNT == self.FRAMES_COUNT:
             try:  # To avoid divide by 0 we put it in try except
                 self.FPS = round(self.FRAMES_COUNT / (time.time() - self.ST))
                 self.ST = time.time()
-                self.CNT = 0
-                print('image')
                 self.process_frame_MobileNetSSD(image, ml_label)
             except:
                 pass
+        self.image = image
         return image
 
-def create_rectangle(self, points):
-        image = self.proccess(self.video, self.ml_label)
-
+    def create_rectangle(self, points, image):
         point1, point2 = points
-        # x1, y1 = point1
-        # x2, y2 = point2
+        x1, y1 = point1
+        x2, y2 = point2
+        cv2.rectangle(image, (x1-(57), y1-(23)), ((x2-20), y2), (0, 0, 255), 2)
+        return image
 
-        cv2.rectangle(image, point1, point2, (0, 0, 255), 4)

@@ -92,6 +92,7 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.label = QtWidgets.QLabel(self.frame_4)
         self.label.setMinimumSize(QtCore.QSize(445, 295))
+
         self.label.setCursor(QtGui.QCursor(QtCore.Qt.CrossCursor))
         self.label.setMouseTracking(True)
         self.label.setText("")
@@ -284,12 +285,12 @@ class Ui_MainWindow(object):
         self.icon8.addPixmap(QtGui.QPixmap(":/Blue/Blue/pause.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setCentralWidget(self.centralwidget)
 
-        self.cv = CV.Computer_Vision
+
         self.retranslateUi(MainWindow)
         self.pushButton_6.clicked.connect(self.loadVideo) # type: ignore
         self.pushButton.clicked.connect(self.stop_) # type: ignore
         self.pushButton_3.clicked.connect(self.playvideo) # type: ignore
-        self.pushButton_2.clicked.connect(self.label.clear) # type: ignore
+        self.pushButton_2.clicked.connect(self.default_address) # type: ignore
         self.pushButton_4.clicked.connect(self.label.clear) # type: ignore
         self.pushButton_5.clicked.connect(self.label.clear) # type: ignore
         self.horizontalSlider_2.rangeChanged['int','int'].connect(self.label.clear) # type: ignore
@@ -320,10 +321,12 @@ class Ui_MainWindow(object):
         self.crop = False
         self.position = 0
         self.video = None
+        self.address = True
 
-
+        #self.main= MainWindow()       #############################################################################
 
         self.computer_vision = Computer_Vision(None, None)
+
 
         # define model
         self.prototxt_path = "./deploy.prototxt"
@@ -338,9 +341,15 @@ class Ui_MainWindow(object):
                         "sofa", "train", "tvmonitor"]
         ################################################################################
 
-    def crop_image_button(self):
-        self.crop = True
+    def default_address(self):
+        if self.address:
+            filename = 'E:/pro/Python/Project for CV/file1.mp4'
+            self.computer_vision.check_file(filename)
+            self.pushButton_3.setEnabled(True)
 
+    def crop_image_button(self):
+        """ This function will allo o get 2 points for cropping image"""
+        self.crop = True
 
     def loadVideo(self):
         """ This function will load the camera device or video file"""
@@ -367,7 +376,7 @@ class Ui_MainWindow(object):
         while self.vid.isOpened():
             if self.vid:
                 QtWidgets.QApplication.processEvents()
-                image = self.computer_vision.proccess(self.vid, self.ML_label)
+                image = self.computer_vision.process(self.vid, self.ML_label)
                 self.computer_vision.CNT += 1
 
                 cv2.waitKey(0) & 0xFF
@@ -418,6 +427,11 @@ class Ui_MainWindow(object):
             self.stop = True
             self.start = False
             self.pause = False
+
+        print(self.computer_vision.points , self.crop)
+        self.computer_vision.points = []
+        self.crop = False
+
         print('Loop break')
 
     def position_changed(self):
@@ -457,18 +471,16 @@ class Ui_MainWindow(object):
 
         # Here we add display text to the image
         text = 'FPS: ' + str(self.computer_vision.FPS)
-        img = ps.putBText(img, text, text_offset_x=20, text_offset_y=30, vspace=20, hspace=10, font_scale=1.0,
-                          background_RGB=(10, 20, 222), text_RGB=(255, 255, 255))
-        text = str(time.strftime("%H:%M %p"))
-        img = ps.putBText(img, text, text_offset_x=img.shape[1] - 180, text_offset_y=30, vspace=20,
-                          hspace=10,
-                          font_scale=1.0, background_RGB=(228, 20, 222), text_RGB=(255, 255, 255))
-        text = f"Label: {self.ML_label}"
-        img = ps.putBText(img, text, text_offset_x=80, text_offset_y=425, vspace=20, hspace=10, font_scale=1.0,
-                          background_RGB=(20, 210, 4), text_RGB=(255, 255, 255))
-
+        # img = ps.putBText(img, text, text_offset_x=20, text_offset_y=30, vspace=20, hspace=10, font_scale=1.0,
+        #                   background_RGB=(10, 20, 222), text_RGB=(255, 255, 255))
+        # text = str(time.strftime("%H:%M %p"))
+        # img = ps.putBText(img, text, text_offset_x=img.shape[1] - 180, text_offset_y=30, vspace=20,
+        #                   hspace=10,
+        #                   font_scale=1.0, background_RGB=(228, 20, 222), text_RGB=(255, 255, 255))
+        # text = f"Label: {self.ML_label}"
+        # img = ps.putBText(img, text, text_offset_x=80, text_offset_y=425, vspace=20, hspace=10, font_scale=1.0,
+        #                   background_RGB=(20, 210, 4), text_RGB=(255, 255, 255))
         self.setPhoto(img)
-
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -482,7 +494,7 @@ class Ui_MainWindow(object):
 import icons01_rc
 
 
-class MainWindow(QMainWindow,QtWidgets.QWidget):
+class MainWindow(QMainWindow, QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -495,27 +507,20 @@ class MainWindow(QMainWindow,QtWidgets.QWidget):
         self.ui.frame_2.setMouseTracking(True)
         self.ui.frame_4.setMouseTracking(True)
         self.ui.label.setMouseTracking(True)
-
-        self.cv = Computer_Vision(None, None)
-        self.cropPoints = []
-
-        # self._image = self.image
+        self.crop_points = []
 
     def mousePressEvent(self, event):
-        s = event.x()
-        f = event.y()
-
-        # if all([s, f, self.ui.crop])
-        if s and f and self.ui.crop:
-            self.cropPoints.append([s, f])
-            if len(self.cropPoints) > 1:
-                print(self.cropPoints)
-                #self.cv.crop_image(self.cropPoints)
-                # print(self.cropPoints)
-                #print('correct')
-                #self.cropPoints = []
-                pass
-
+        x = event.x()
+        y = event.y()
+        print('x: ', x)
+        print('y: ', y)
+        if self.ui.crop:
+            self.crop_points.append((x, y))
+            if len(self.crop_points) > 1:
+                self.ui.computer_vision.points = self.crop_points
+                # self.ui.computer_vision.create_rectangle( self.crop_points)
+                self.crop_points = []
+                self.ui.crop = False
     def keyPressEvent(self, e):  # doesnt work when app is in background
         if e.key() == Qt.key_Escape:
             self.close()
