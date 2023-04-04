@@ -376,7 +376,7 @@ class Ui_MainWindow(object):
         while self.vid.isOpened():
             if self.vid:
                 QtWidgets.QApplication.processEvents()
-                image = self.computer_vision.process(self.vid, self.ML_label)
+                image = self.computer_vision.process(self.vid)
                 self.computer_vision.CNT += 1
 
                 cv2.waitKey(0) & 0xFF

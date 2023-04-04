@@ -24,6 +24,7 @@ class Computer_Vision:
         self.net = cv2.dnn.readNetFromCaffe(self.prototxt_path, self.model_path)
         self.ml_label = ml_label
         self.points = []
+        self.crop_image_labels = []
 
 
 
@@ -68,6 +69,37 @@ class Computer_Vision:
 
         return image
 
+    def process_crop_image(self, image):
+        # (H, W) = image.shape
+        # print(H, W)
+        # convert the frame to a blob and pass the blob through the
+        # network and obtain the detections
+        blob = cv2.dnn.blobFromImage(image, size=(300, 300), ddepth=cv2.CV_8U)
+        self.net.setInput(blob, scalefactor=1.0 / 127.5, mean=[127.5, 127.5, 127.5])
+        detections = self.net.forward()
+        for label in self.classes:
+        # loop over the detections`
+            for i in np.arange(0, detections.shape[2]):
+                # extract the confidence (i.e., probability) associated
+                # with the prediction
+                confidence = detections[0, 0, i, 2]
+                # filter out weak detections by ensuring the `confidence`
+                # is greater than the minimum confidence
+                if confidence > .8:
+                    # extract the index of the class label from the
+                    # detections list
+                    idx = int(detections[0, 0, i, 1])
+                    # if the class label is not a car, ignore it
+                    if self.classes[idx] == label:
+                        self.crop_image_labels.append(label)
+                    else:
+                        continue
+                    # compute the (x, y)-coordinates of the bounding box
+                    # for the object
+                    # box = detections[0, 0, i, 3:7] * np.array([W, H, W, H])
+                    # (startX, startY, endX, endY) = box.astype("int")
+                    # cv2.rectangle(image, (startX, startY), (endX, endY), (0, 250, 0), 2)
+
 
     def check_file(self, filename: str) -> str:
         if filename:
@@ -83,12 +115,21 @@ class Computer_Vision:
     def get_duration(self, vid):
         return int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    def process(self, vid, ml_label):
+    def process(self, vid):
         img, image = vid.read()
-        image = self.process_frame_MobileNetSSD(image, ml_label)
+        image = self.process_frame_MobileNetSSD(image, self.ml_label)
         image = cv2.resize(image, (617, 375), interpolation= cv2.INTER_LINEAR)
         if self.points:
             image = self.create_rectangle(self.points, image)
+            x1, y1 = self.points[0]
+            x2, y2 = self.points[1]
+            print(x1, y1,  x2, y2)
+
+            #image01 = image[(x1-57):(x2-20), (y1-23):y2]
+            image01 = image[x1:x2, y1:y2,:]
+            print(image01.shape)
+            self.process_crop_image(image01)
+            self.ml_label = self.crop_image_labels[0]
             self.CNT += 1
             if self.CNT >= 100:
                 self.points = []
@@ -97,7 +138,7 @@ class Computer_Vision:
             try:  # To avoid divide by 0 we put it in try except
                 self.FPS = round(self.FRAMES_COUNT / (time.time() - self.ST))
                 self.ST = time.time()
-                self.process_frame_MobileNetSSD(image, ml_label)
+                self.process_frame_MobileNetSSD(image, self.ml_label)
             except:
                 pass
         self.image = image
