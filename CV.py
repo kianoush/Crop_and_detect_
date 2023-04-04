@@ -17,7 +17,7 @@ class Computer_Vision:
 
     def __init__(self, video, ml_label):
         # define model
-        self.filename = ''
+        self.fileName = ''
         self.video = video
         self.prototxt_path = "./deploy.prototxt"
         self.model_path = "./mobilenet_iter_73000.caffemodel"
@@ -101,15 +101,15 @@ class Computer_Vision:
                     # cv2.rectangle(image, (startX, startY), (endX, endY), (0, 250, 0), 2)
 
 
-    def check_file(self, filename: str) -> str:
-        if filename:
-            self.filename = filename
-            return filename
+    def check_file(self, fileName: str) -> str:
+        if fileName:
+            self.fileName = fileName
+            return fileName
 
     def get_video(self):
-        if self.filename:
+        if self.fileName:
             #print(self.filename)
-            self.video = cv2.VideoCapture(self.filename)
+            self.video = cv2.VideoCapture(self.fileName)
         return self.video
 
     def get_duration(self, vid):

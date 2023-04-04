@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QHBoxLayout, QVBoxLayout, QStyle, QSlider, QFileDialog, QLineEdit, QTextBrowser
 from PyQt5.QtGui import QIcon, QPalette, QImage
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Q_ARG, QAbstractItemModel,
-                          QFileInfo, qFuzzyCompare, QMetaObject, QModelIndex, QObject, Qt,
+                          QFileInfo, qFuzzyCompare, QMetaObject, QModelIndex, QObject, Qt, QStringListModel,
                           QThread, QTime, QUrl)
 from PyQt5.QtMultimedia import (QAbstractVideoBuffer, QMediaContent,
                                 QMediaMetaData, QMediaPlayer, QMediaPlaylist, QVideoFrame, QVideoProbe)
@@ -328,6 +328,7 @@ class Ui_MainWindow(object):
         self.position = 0
         self.video = None
         self.address = True
+        self.filename_list = []
 
         #self.main= MainWindow()       #############################################################################
 
@@ -357,11 +358,18 @@ class Ui_MainWindow(object):
         """ This function will allo o get 2 points for cropping image"""
         self.crop = True
 
+
     def loadVideo(self):
         """ This function will load the camera device or video file"""
-        filename = QFileDialog.getOpenFileName(filter="Video (*.*)")[0]
-        self.computer_vision.check_file(filename)
-        if self.computer_vision.filename:
+        fileName = QFileDialog.getOpenFileName(filter="Video (*.*)")[0]
+        self.computer_vision.check_file(fileName)
+        videoName = fileName.split('/')[-1].split('.')[0]
+        print(videoName)
+        self.filename_list.append(videoName)
+        string_list = videoName
+        model = QStringListModel(string_list)
+        self.listView.setModel(model)
+        if self.computer_vision.fileName:
             self.pushButton_3.setEnabled(True)
 
     def playvideo(self):
