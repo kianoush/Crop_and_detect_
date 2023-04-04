@@ -296,8 +296,8 @@ class Ui_MainWindow(object):
         self.pushButton_6.clicked.connect(self.loadVideo) # type: ignore
         self.pushButton.clicked.connect(self.stop_) # type: ignore
         self.pushButton_3.clicked.connect(self.playvideo) # type: ignore
-        self.pushButton_2.clicked.connect(self.default_address) # type: ignore
-        self.pushButton_4.clicked.connect(self.label.clear) # type: ignore
+        self.pushButton_2.clicked.connect(self.backward_video) # type: ignore
+        self.pushButton_4.clicked.connect(self.forward_video) # type: ignore
         self.pushButton_5.clicked.connect(self.label.clear) # type: ignore
         self.horizontalSlider_2.rangeChanged['int','int'].connect(self.label.clear) # type: ignore
         self.comboBox.activated['int'].connect(self.label.clear) # type: ignore
@@ -328,7 +328,10 @@ class Ui_MainWindow(object):
         self.position = 0
         self.video = None
         self.address = True
-        self.filename_list = []
+        self.fileAddress_list = []
+        self.videos_dic = {}
+        self.video_form_the_list = len(self.videos_dic)
+        print('self.video_form_the_list ', self.video_form_the_list)
 
         #self.main= MainWindow()       #############################################################################
 
@@ -348,6 +351,34 @@ class Ui_MainWindow(object):
                         "sofa", "train", "tvmonitor"]
         ################################################################################
 
+    def check_video_in_list(self):
+        key = self.fileAddress_list[self.video_form_the_list]
+        print(key)
+        self.stop_()
+        self.computer_vision.check_file(self.videos_dic[key])
+
+
+
+    def forward_video(self):
+        if (len(self.videos_dic)-1) > self.video_form_the_list:
+            self.video_form_the_list += 1
+        else:
+            self.video_form_the_list = 0
+        print('forward_video: ', self.video_form_the_list)
+        self.check_video_in_list()
+
+
+    def backward_video(self):
+        if self.video_form_the_list == 0:
+            self.video_form_the_list = len(self.videos_dic) - 1
+        else:
+            self.video_form_the_list -= 1
+
+        print('Backward_video: ', self.video_form_the_list)
+        self.check_video_in_list()
+
+
+
     def default_address(self):
         if self.address:
             filename = 'E:/pro/Python/Project for CV/file1.mp4'
@@ -361,16 +392,21 @@ class Ui_MainWindow(object):
 
     def loadVideo(self):
         """ This function will load the camera device or video file"""
-        fileName = QFileDialog.getOpenFileName(filter="Video (*.*)")[0]
-        self.computer_vision.check_file(fileName)
-        videoName = fileName.split('/')[-1].split('.')[0]
-        print(videoName)
-        self.filename_list.append(videoName)
-        string_list = videoName
-        model = QStringListModel(string_list)
-        self.listView.setModel(model)
-        if self.computer_vision.fileName:
+        fileAddress = QFileDialog.getOpenFileName(filter="Video (*.*)")[0]
+        self.computer_vision.check_file(fileAddress)
+        self.listView_( fileAddress)
+        if self.computer_vision.fileAddress:
             self.pushButton_3.setEnabled(True)
+
+    def listView_(self, fileAddress):
+        videoName = fileAddress.split('/')[-1].split('.')[0]
+        self.videos_dic[videoName] = fileAddress
+        print(self.videos_dic)
+        self.fileAddress_list.append(videoName)
+        model = QStringListModel(self.fileAddress_list)
+        self.listView.setModel(model)
+
+
 
     def playvideo(self):
 
@@ -442,10 +478,8 @@ class Ui_MainWindow(object):
             self.start = False
             self.pause = False
 
-        print(self.computer_vision.points , self.crop)
         self.computer_vision.points = []
         self.crop = False
-
         print('Loop break')
 
     def position_changed(self):
