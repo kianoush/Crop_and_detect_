@@ -111,6 +111,9 @@ class Ui_MainWindow(object):
         self.frame_3.setObjectName("frame_3")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.frame_3)
         self.gridLayout_4.setObjectName("gridLayout_4")
+
+
+
         self.frame_9 = QtWidgets.QFrame(self.frame_3)
         self.frame_9.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_9.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -119,6 +122,9 @@ class Ui_MainWindow(object):
         self.gridLayout_5.setObjectName("gridLayout_5")
         self.listView = QtWidgets.QListView(self.frame_9)
         self.listView.setObjectName("listView")
+
+
+
         self.gridLayout_5.addWidget(self.listView, 0, 0, 1, 1)
         self.gridLayout_4.addWidget(self.frame_9, 1, 0, 1, 1)
         self.frame_8 = QtWidgets.QFrame(self.frame_3)
@@ -470,7 +476,7 @@ class Ui_MainWindow(object):
         """
 
         # Here we add display text to the image
-        text = 'FPS: ' + str(self.computer_vision.FPS)
+        # text = 'FPS: ' + str(self.computer_vision.FPS)
         # img = ps.putBText(img, text, text_offset_x=20, text_offset_y=30, vspace=20, hspace=10, font_scale=1.0,
         #                   background_RGB=(10, 20, 222), text_RGB=(255, 255, 255))
         # text = str(time.strftime("%H:%M %p"))

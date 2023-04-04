@@ -125,11 +125,13 @@ class Computer_Vision:
             x2, y2 = self.points[1]
             print(x1, y1,  x2, y2)
 
-            #image01 = image[(x1-57):(x2-20), (y1-23):y2]
-            image01 = image[x1:x2, y1:y2,:]
+            image01 = image[(x1-57):(x2-20), (y1-23):y2]
+            #image01 = image[x1:x2, y1:y2, :]
             print(image01.shape)
             self.process_crop_image(image01)
-            self.ml_label = self.crop_image_labels[0]
+            if self.crop_image_labels:
+                print(self.crop_image_labels)
+                self.ml_label = self.crop_image_labels[0]
             self.CNT += 1
             if self.CNT >= 100:
                 self.points = []
