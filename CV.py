@@ -6,8 +6,8 @@ import imutils
 import time
 import cv2
 import pyshine as ps
-
-
+from ffpyplayer.player import MediaPlayer
+from Ui_videoPlayer03 import *
 
 class Computer_Vision:
     CNT = 0
@@ -15,7 +15,7 @@ class Computer_Vision:
     ST = 0
     FPS = 0
 
-    def __init__(self, video, ml_label):
+    def __init__(self, video, ml_label, parent=None):
         # define model
         self.fileAddress = ''
         self.video = video
@@ -25,7 +25,9 @@ class Computer_Vision:
         self.ml_label = ml_label
         self.points = []
         self.crop_image_labels = []
-
+###########################################################################
+        #self.ui = Ui_MainWindow()
+#############################################################################
 
 
 
@@ -110,13 +112,20 @@ class Computer_Vision:
         if self.fileAddress:
             #print(self.filename)
             self.video = cv2.VideoCapture(self.fileAddress)
-        return self.video
+            self.player = MediaPlayer(self.fileAddress)
+
+        return self.video, self.player
 
     def get_duration(self, vid):
         return int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    def process(self, vid):
+    def process(self, vid, player):
+        audio_frame, val = player.get_frame()
         img, image = vid.read()
+        # if not image:
+        #     self.ui.stop_()
+        #     print("End of video")
+
         image = self.process_frame_MobileNetSSD(image, self.ml_label)
         image = cv2.resize(image, (617, 375), interpolation= cv2.INTER_LINEAR)
         if self.points:
@@ -144,7 +153,7 @@ class Computer_Vision:
             except:
                 pass
         self.image = image
-        return image
+        return image, audio_frame
 
     def create_rectangle(self, points, image):
         point1, point2 = points

@@ -25,6 +25,7 @@ import time
 import cv2
 import pyshine as ps
 import CV
+from ffpyplayer.player import MediaPlayer
 from CV import *
 
 
@@ -289,6 +290,8 @@ class Ui_MainWindow(object):
         self.gridLayout_3.addWidget(self.frame_5, 1, 0, 1, 1)
         self.icon8 = QtGui.QIcon()
         self.icon8.addPixmap(QtGui.QPixmap(":/Blue/Blue/pause.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.media_player = QMediaPlayer()
+        self.media_player.setVolume(50)
         MainWindow.setCentralWidget(self.centralwidget)
 
 
@@ -299,7 +302,8 @@ class Ui_MainWindow(object):
         self.pushButton_2.clicked.connect(self.backward_video) # type: ignore
         self.pushButton_4.clicked.connect(self.forward_video) # type: ignore
         self.pushButton_5.clicked.connect(self.label.clear) # type: ignore
-        self.horizontalSlider_2.rangeChanged['int','int'].connect(self.label.clear) # type: ignore
+        #self.horizontalSlider_2.rangeChanged['int','int'].connect(self.set_volume) # type: ignore
+        self.horizontalSlider_2.sliderMoved.connect(self.set_volume)  # type: ignore
         self.comboBox.activated['int'].connect(self.label.clear) # type: ignore
         self.pushButton_7.clicked.connect(self.label.clear) # type: ignore
         self.pushButton_9.clicked.connect(self.crop_image_button) # type: ignore
@@ -351,15 +355,22 @@ class Ui_MainWindow(object):
                         "sofa", "train", "tvmonitor"]
         ################################################################################
 
+
+    def set_volume(self, volume= 10):
+        # Slot to set the volume of the media player
+        d = self.media_player.setVolume(volume)
+        print(d)
+
     def check_video_in_list(self):
+        """this function will get the integer to forward or backward the videos from the list"""
         key = self.fileAddress_list[self.video_form_the_list]
-        print(key)
         self.stop_()
         self.computer_vision.check_file(self.videos_dic[key])
 
 
 
     def forward_video(self):
+        """this function send integer to forward the videos from the list"""
         if (len(self.videos_dic)-1) > self.video_form_the_list:
             self.video_form_the_list += 1
         else:
@@ -369,6 +380,7 @@ class Ui_MainWindow(object):
 
 
     def backward_video(self):
+        """this function send integer to backward the videos from the list"""
         if self.video_form_the_list == 0:
             self.video_form_the_list = len(self.videos_dic) - 1
         else:
@@ -380,6 +392,7 @@ class Ui_MainWindow(object):
 
 
     def default_address(self):
+        """   ...           """
         if self.address:
             filename = 'E:/pro/Python/Project for CV/file1.mp4'
             self.computer_vision.check_file(filename)
@@ -399,6 +412,7 @@ class Ui_MainWindow(object):
             self.pushButton_3.setEnabled(True)
 
     def listView_(self, fileAddress):
+        """ This function prepare the videos name for list View """
         videoName = fileAddress.split('/')[-1].split('.')[0]
         self.videos_dic[videoName] = fileAddress
         print(self.videos_dic)
@@ -413,7 +427,7 @@ class Ui_MainWindow(object):
         """ This function obtain the image and set it to label using the setPhoto function
         """
         self.startedStatus()
-        self.vid = self.computer_vision.get_video()
+        self.vid, p_ = self.computer_vision.get_video()
         self.computer_vision.video = self.vid
         duration = self.computer_vision.get_duration(self.vid)
         self.horizontalSlider.setRange(0, duration)
@@ -426,9 +440,10 @@ class Ui_MainWindow(object):
         while self.vid.isOpened():
             if self.vid:
                 QtWidgets.QApplication.processEvents()
-                image = self.computer_vision.process(self.vid)
-                self.computer_vision.CNT += 1
+                image, s_ = self.computer_vision.process(self.vid, p_)
 
+
+                self.computer_vision.CNT += 1
                 cv2.waitKey(0) & 0xFF
                 if self.pause == True and self.start == False and self.stop == False:
                     self.pushButton_3.setIcon(self.icon5)
@@ -452,6 +467,7 @@ class Ui_MainWindow(object):
                 break
 
     def startedStatus(self):
+        """ This function check the play and pause status"""
         if not self.start:
             self.start = True
             self.pause = False
@@ -467,6 +483,7 @@ class Ui_MainWindow(object):
 
 
     def stop_(self):
+        """ This function stop playing """
         if self.pause:
             self.label.setPixmap(QtGui.QPixmap("./Img01"))
             self.position = 0
@@ -483,9 +500,11 @@ class Ui_MainWindow(object):
         print('Loop break')
 
     def position_changed(self):
+        """ This function get the duration manually to set the duration """
         self.horizontalSlider.setValue(self.position)
 
     def set_position(self):
+        """ This function get the duration to moving the bar values """
         self.horizontalSlider.setValue(self.position)
 
     def text_box(self):
@@ -508,8 +527,6 @@ class Ui_MainWindow(object):
         frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
         self.label.setPixmap(QtGui.QPixmap.fromImage(image))
-
-
 
 
     def update(self, img):
