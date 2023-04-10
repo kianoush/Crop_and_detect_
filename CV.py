@@ -25,6 +25,7 @@ class Computer_Vision:
         self.ml_label = ml_label
         self.points = []
         self.crop_image_labels = []
+        self.media_playerv = 20
 ###########################################################################
         #self.ui = Ui_MainWindow()
 #############################################################################
@@ -114,6 +115,7 @@ class Computer_Vision:
             self.video = cv2.VideoCapture(self.fileAddress)
             self.player = MediaPlayer(self.fileAddress)
 
+
         return self.video, self.player
 
     def get_duration(self, vid):
@@ -134,12 +136,13 @@ class Computer_Vision:
             x2, y2 = self.points[1]
             print(x1, y1,  x2, y2)
 
-            image01 = image[(x1-57):(x2-20), (y1-23):y2]
-            #image01 = image[x1:x2, y1:y2, :]
-            print(image01.shape)
+            image01 = image[(y1-23):y2, (x1-57):(x2-20)]
+            # image01 = image[0:200, 0:100, :]
+            #print(image01.shape)
             self.process_crop_image(image01)
             if self.crop_image_labels:
-                print(self.crop_image_labels)
+                #print(self.crop_image_labels)
+                #cv2.imshow('',image01)
                 self.ml_label = self.crop_image_labels[0]
             self.CNT += 1
             if self.CNT >= 100:
@@ -159,6 +162,6 @@ class Computer_Vision:
         point1, point2 = points
         x1, y1 = point1
         x2, y2 = point2
-        cv2.rectangle(image, (x1-(57), y1-(23)), ((x2-20), y2), (0, 0, 255), 2)
+        cv2.rectangle(image, (x1-(57), y1-(23)), (x2-20, y2), (0, 0, 255), 2)
         return image
 

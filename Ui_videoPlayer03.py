@@ -34,7 +34,8 @@ from CV import *
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(900, 548)
+        #MainWindow.resize(900, 548)
+        MainWindow.resize(1900, 1548)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -364,8 +365,8 @@ class Ui_MainWindow(object):
 
 
     def set_volume(self, value):
-        self.media_player.setVolume(value)
-        print(value)
+        self.computer_vision.media_playerv = value
+        #print(value)
 
     def check_video_in_list(self):
         """this function will get the integer to forward or backward the videos from the list"""
@@ -451,9 +452,10 @@ class Ui_MainWindow(object):
                 image, s_ = self.computer_vision.process(self.vid, p_)
 
 
+
                 self.computer_vision.CNT += 1
 
-                cv2.waitKey(0) & 0xFF
+                cv2.waitKey(14) & 0xFF
                 if self.pause == True and self.start == False and self.stop == False:
                     self.pushButton_3.setIcon(self.icon5)
                     break
