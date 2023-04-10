@@ -272,6 +272,10 @@ class Ui_MainWindow(object):
         self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_2.setObjectName("horizontalSlider_2")
         self.horizontalLayout_2.addWidget(self.horizontalSlider_2)
+        #self.horizontalSlider_2.setRange(0, 100)
+        self.horizontalSlider_2.setMinimum(0)
+        self.horizontalSlider_2.setMaximum(100)
+        self.horizontalSlider_2.setPageStep(5)
         spacerItem1 = QtWidgets.QSpacerItem(3, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem1)
         self.comboBox = QtWidgets.QComboBox(self.frame_5)
@@ -303,7 +307,8 @@ class Ui_MainWindow(object):
         self.pushButton_4.clicked.connect(self.forward_video) # type: ignore
         self.pushButton_5.clicked.connect(self.label.clear) # type: ignore
         #self.horizontalSlider_2.rangeChanged['int','int'].connect(self.set_volume) # type: ignore
-        self.horizontalSlider_2.sliderMoved.connect(self.set_volume)  # type: ignore
+        #self.horizontalSlider_2.sliderMoved.connect(self.set_volume)  # type: ignore valueChanged
+        self.horizontalSlider_2.valueChanged.connect(self.set_volume)  # type: ignore valueChanged
         self.comboBox.activated['int'].connect(self.label.clear) # type: ignore
         self.pushButton_7.clicked.connect(self.label.clear) # type: ignore
         self.pushButton_9.clicked.connect(self.crop_image_button) # type: ignore
@@ -335,7 +340,9 @@ class Ui_MainWindow(object):
         self.fileAddress_list = []
         self.videos_dic = {}
         self.video_form_the_list = len(self.videos_dic)
-        print('self.video_form_the_list ', self.video_form_the_list)
+        #print('self.video_form_the_list ', self.video_form_the_list)
+        self.c= 0
+
 
         #self.main= MainWindow()       #############################################################################
 
@@ -356,10 +363,9 @@ class Ui_MainWindow(object):
         ################################################################################
 
 
-    def set_volume(self, volume= 10):
-        # Slot to set the volume of the media player
-        d = self.media_player.setVolume(volume)
-        print(d)
+    def set_volume(self, value):
+        self.media_player.setVolume(value)
+        print(value)
 
     def check_video_in_list(self):
         """this function will get the integer to forward or backward the videos from the list"""
@@ -368,10 +374,11 @@ class Ui_MainWindow(object):
         self.computer_vision.check_file(self.videos_dic[key])
 
 
-
     def forward_video(self):
         """this function send integer to forward the videos from the list"""
-        if (len(self.videos_dic)-1) > self.video_form_the_list:
+        if len(self.videos_dic) == 0:
+            return
+        elif (len(self.videos_dic)-1) > self.video_form_the_list:
             self.video_form_the_list += 1
         else:
             self.video_form_the_list = 0
@@ -381,6 +388,8 @@ class Ui_MainWindow(object):
 
     def backward_video(self):
         """this function send integer to backward the videos from the list"""
+        if len(self.videos_dic) == 0:
+            return
         if self.video_form_the_list == 0:
             self.video_form_the_list = len(self.videos_dic) - 1
         else:
@@ -421,7 +430,6 @@ class Ui_MainWindow(object):
         self.listView.setModel(model)
 
 
-
     def playvideo(self):
 
         """ This function obtain the image and set it to label using the setPhoto function
@@ -444,6 +452,7 @@ class Ui_MainWindow(object):
 
 
                 self.computer_vision.CNT += 1
+
                 cv2.waitKey(0) & 0xFF
                 if self.pause == True and self.start == False and self.stop == False:
                     self.pushButton_3.setIcon(self.icon5)
