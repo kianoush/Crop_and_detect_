@@ -15,7 +15,7 @@ class Computer_Vision:
     ST = 0
     FPS = 0
 
-    def __init__(self, video, ml_label, parent=None):
+    def __init__(self, video, ml_label, volume, parent=None):
         # define model
         self.fileAddress = ''
         self.video = video
@@ -25,12 +25,10 @@ class Computer_Vision:
         self.ml_label = ml_label
         self.points = []
         self.crop_image_labels = []
-        self.media_playerv = 20
+        self.volume = volume
 ###########################################################################
-        #self.ui = Ui_MainWindow()
+
 #############################################################################
-
-
 
         # initialize the list of class labels MobileNet SSD was trained to detect
         self.classes = ["background", "aeroplane", "bicycle", "bird", "boat",
@@ -115,14 +113,22 @@ class Computer_Vision:
             self.video = cv2.VideoCapture(self.fileAddress)
             self.player = MediaPlayer(self.fileAddress)
 
+        return self.video
+    def get_audio(self, v):
+        print('get_volume: ',self.player.get_volume())
+        self.player.set_volume(80000)
+        self.volume = v
+        print(v)
 
-        return self.video, self.player
+    def stop_audio(self):
+        print('stop_audio ')
+        self.player.close_player()
+
 
     def get_duration(self, vid):
         return int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    def process(self, vid, player):
-        audio_frame, val = player.get_frame()
+    def process(self, vid):
         img, image = vid.read()
         # if not image:
         #     self.ui.stop_()
@@ -156,7 +162,7 @@ class Computer_Vision:
             except:
                 pass
         self.image = image
-        return image, audio_frame
+        return image
 
     def create_rectangle(self, points, image):
         point1, point2 = points

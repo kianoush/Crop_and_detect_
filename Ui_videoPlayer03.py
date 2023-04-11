@@ -19,13 +19,8 @@ from PyQt5.QtMultimedia import (QAbstractVideoBuffer, QMediaContent,
 from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 
-import numpy as np
-import imutils
-import time
-import cv2
-import pyshine as ps
-import CV
-from ffpyplayer.player import MediaPlayer
+import sounddevice as sd
+
 from CV import *
 
 
@@ -34,8 +29,7 @@ from CV import *
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        #MainWindow.resize(900, 548)
-        MainWindow.resize(1900, 1548)
+        MainWindow.resize(900, 548)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -43,9 +37,7 @@ class Ui_MainWindow(object):
         MainWindow.setSizePolicy(sizePolicy)
         MainWindow.setMinimumSize(QtCore.QSize(800, 530))
         MainWindow.setMaximumSize(QtCore.QSize(900, 550))
-
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
-
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setEnabled(True)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
@@ -94,7 +86,6 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.label = QtWidgets.QLabel(self.frame_4)
         self.label.setMinimumSize(QtCore.QSize(445, 295))
-
         self.label.setCursor(QtGui.QCursor(QtCore.Qt.CrossCursor))
         self.label.setMouseTracking(True)
         self.label.setText("")
@@ -113,9 +104,6 @@ class Ui_MainWindow(object):
         self.frame_3.setObjectName("frame_3")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.frame_3)
         self.gridLayout_4.setObjectName("gridLayout_4")
-
-
-
         self.frame_9 = QtWidgets.QFrame(self.frame_3)
         self.frame_9.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_9.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -124,9 +112,6 @@ class Ui_MainWindow(object):
         self.gridLayout_5.setObjectName("gridLayout_5")
         self.listView = QtWidgets.QListView(self.frame_9)
         self.listView.setObjectName("listView")
-
-
-
         self.gridLayout_5.addWidget(self.listView, 0, 0, 1, 1)
         self.gridLayout_4.addWidget(self.frame_9, 1, 0, 1, 1)
         self.frame_8 = QtWidgets.QFrame(self.frame_3)
@@ -273,9 +258,8 @@ class Ui_MainWindow(object):
         self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_2.setObjectName("horizontalSlider_2")
         self.horizontalLayout_2.addWidget(self.horizontalSlider_2)
-        #self.horizontalSlider_2.setRange(0, 100)
-        self.horizontalSlider_2.setMinimum(0)
-        self.horizontalSlider_2.setMaximum(100)
+        self.horizontalSlider_2.setRange(0, 100)
+        self.horizontalSlider_2.setValue(50)
         self.horizontalSlider_2.setPageStep(5)
         spacerItem1 = QtWidgets.QSpacerItem(3, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem1)
@@ -309,9 +293,9 @@ class Ui_MainWindow(object):
         self.pushButton_5.clicked.connect(self.label.clear) # type: ignore
         #self.horizontalSlider_2.rangeChanged['int','int'].connect(self.set_volume) # type: ignore
         #self.horizontalSlider_2.sliderMoved.connect(self.set_volume)  # type: ignore valueChanged
-        self.horizontalSlider_2.valueChanged.connect(self.set_volume)  # type: ignore valueChanged
-        self.comboBox.activated['int'].connect(self.label.clear) # type: ignore
-        self.pushButton_7.clicked.connect(self.label.clear) # type: ignore
+        self.horizontalSlider_2.valueChanged.connect(self.set_volume)  ##type: ignore valueChanged
+        self.comboBox.activated['int'].connect(self.set_video_speed) # type: ignore
+        self.pushButton_7.clicked.connect(self.label.clear) ## type: ig
         self.pushButton_9.clicked.connect(self.crop_image_button) # type: ignore
         self.lineEdit.textEdited['QString'].connect(self.label.setText) # type: ignore
         self.pushButton_11.clicked.connect(self.text_box) # type: ignore
@@ -341,39 +325,30 @@ class Ui_MainWindow(object):
         self.fileAddress_list = []
         self.videos_dic = {}
         self.video_form_the_list = len(self.videos_dic)
-        #print('self.video_form_the_list ', self.video_form_the_list)
         self.c= 0
+        self.computer_vision = Computer_Vision(None, None, 50)
+        self.video_speed = 1
 
 
-        #self.main= MainWindow()       #############################################################################
 
-        self.computer_vision = Computer_Vision(None, None)
+    def set_video_speed(self, value):
+        if value == 1:
+            self.video_speed = 2
 
+        elif value == 2:
+            self.video_speed = 10
 
-        # define model
-        self.prototxt_path = "./deploy.prototxt"
-        self.model_path = "./mobilenet_iter_73000.caffemodel"
-        self.net = cv2.dnn.readNetFromCaffe(self.prototxt_path, self.model_path)
-        self.p = 0
-
-        # initialize the list of class labels MobileNet SSD was trained to detect
-        self.classes = ["background", "aeroplane", "bicycle", "bird", "boat",
-                        "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
-                        "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
-                        "sofa", "train", "tvmonitor"]
-        ################################################################################
-
+        else:
+            self.video_speed = 1
 
     def set_volume(self, value):
-        self.computer_vision.media_playerv = value
-        #print(value)
+        self.computer_vision.get_audio(value)
 
     def check_video_in_list(self):
         """this function will get the integer to forward or backward the videos from the list"""
         key = self.fileAddress_list[self.video_form_the_list]
         self.stop_()
         self.computer_vision.check_file(self.videos_dic[key])
-
 
     def forward_video(self):
         """this function send integer to forward the videos from the list"""
@@ -385,7 +360,6 @@ class Ui_MainWindow(object):
             self.video_form_the_list = 0
         print('forward_video: ', self.video_form_the_list)
         self.check_video_in_list()
-
 
     def backward_video(self):
         """this function send integer to backward the videos from the list"""
@@ -436,7 +410,7 @@ class Ui_MainWindow(object):
         """ This function obtain the image and set it to label using the setPhoto function
         """
         self.startedStatus()
-        self.vid, p_ = self.computer_vision.get_video()
+        self.vid = self.computer_vision.get_video()
         self.computer_vision.video = self.vid
         duration = self.computer_vision.get_duration(self.vid)
         self.horizontalSlider.setRange(0, duration)
@@ -445,19 +419,17 @@ class Ui_MainWindow(object):
             self.vid.set(cv2.CAP_PROP_POS_FRAMES, self.position)
             #self.set_position()
 
-
         while self.vid.isOpened():
             if self.vid:
                 QtWidgets.QApplication.processEvents()
-                image, s_ = self.computer_vision.process(self.vid, p_)
-
-
+                image = self.computer_vision.process(self.vid)
 
                 self.computer_vision.CNT += 1
 
-                cv2.waitKey(14) & 0xFF
+                cv2.waitKey(10 // self.video_speed) & 0xFF
                 if self.pause == True and self.start == False and self.stop == False:
                     self.pushButton_3.setIcon(self.icon5)
+                    self.computer_vision.stop_audio()
                     break
 
                 if self.stop == True:
@@ -467,6 +439,7 @@ class Ui_MainWindow(object):
                     self.set_position()
                     self.stop = False
                     self.start = False
+                    self.computer_vision.stop_audio()
                     break
 
                 # Update the slider bar
@@ -606,3 +579,28 @@ class MainWindow(QMainWindow, QtWidgets.QWidget):
         self.stylusProximityControlOff()
         self.deleteLater()
 
+    def getAudio(self):
+        try:
+            QtWidgets.QApplication.processEvents()
+            def audio_callback(indata ,frames ,time ,status):
+                self.q.put(indata[::self.downsample ,[0]])
+            stream  = sd.InputStream( device = self.device, channels = max(self.channels), samplerate =self.samplerate, callback  = audio_callback)
+            with stream:
+
+                while True:
+                    QtWidgets.QApplication.processEvents()
+                    if self.go_on:
+
+                        break
+
+
+            self.pushButton.setEnabled(True)
+            self.lineEdit.setEnabled(True)
+            self.lineEdit_2.setEnabled(True)
+            self.lineEdit_3.setEnabled(True)
+            self.lineEdit_4.setEnabled(True)
+            self.comboBox.setEnabled(True)
+
+        except Exception as e:
+            print("ERROR: " ,e)
+            pass
