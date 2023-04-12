@@ -290,7 +290,7 @@ class Ui_MainWindow(object):
         self.pushButton_3.clicked.connect(self.playvideo) # type: ignore
         self.pushButton_2.clicked.connect(self.backward_video) # type: ignore
         self.pushButton_4.clicked.connect(self.forward_video) # type: ignore
-        self.pushButton_5.clicked.connect(self.label.clear) # type: ignore
+        self.pushButton_5.clicked.connect(self.set_video_mute) # type: ignore
         #self.horizontalSlider_2.rangeChanged['int','int'].connect(self.set_volume) # type: ignore
         #self.horizontalSlider_2.sliderMoved.connect(self.set_volume)  # type: ignore valueChanged
         self.horizontalSlider_2.valueChanged.connect(self.set_volume)  ##type: ignore valueChanged
@@ -300,6 +300,7 @@ class Ui_MainWindow(object):
         self.lineEdit.textEdited['QString'].connect(self.label.setText) # type: ignore
         self.pushButton_11.clicked.connect(self.text_box) # type: ignore
         self.horizontalSlider.sliderMoved.connect(self.set_position) # type: ignore
+        self.horizontalSlider.valueChanged.connect(self.change_position)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
 
@@ -333,13 +334,17 @@ class Ui_MainWindow(object):
 
     def set_video_speed(self, value):
         if value == 1:
+            self.computer_vision.set_mute()
             self.video_speed = 2
-
         elif value == 2:
+            self.computer_vision.set_mute()
             self.video_speed = 10
-
         else:
+            self.computer_vision.set_mute()
             self.video_speed = 1
+    def set_video_mute(self, value):
+        self.computer_vision.set_mute()
+        print('set_video_mute')
 
     def set_volume(self, value):
         self.computer_vision.get_audio(value)
@@ -410,14 +415,21 @@ class Ui_MainWindow(object):
         """ This function obtain the image and set it to label using the setPhoto function
         """
         self.startedStatus()
-        self.vid = self.computer_vision.get_video()
+        #self.computer_vision.pause_audio()
+        #self.vid = self.computer_vision.get_video()
+        # self.computer_vision.video = self.vid
+        # duration = self.computer_vision.get_duration(self.vid)
+        # self.horizontalSlider.setRange(0, duration)
+
+        if self.position:
+            self.vid.set(cv2.CAP_PROP_POS_FRAMES, self.position)
+            self.computer_vision.pause_audio(False)
+        else:
+            self.vid = self.computer_vision.get_video()
         self.computer_vision.video = self.vid
         duration = self.computer_vision.get_duration(self.vid)
         self.horizontalSlider.setRange(0, duration)
 
-        if self.position:
-            self.vid.set(cv2.CAP_PROP_POS_FRAMES, self.position)
-            #self.set_position()
 
         while self.vid.isOpened():
             if self.vid:
@@ -427,9 +439,11 @@ class Ui_MainWindow(object):
                 self.computer_vision.CNT += 1
 
                 cv2.waitKey(10 // self.video_speed) & 0xFF
+
                 if self.pause == True and self.start == False and self.stop == False:
                     self.pushButton_3.setIcon(self.icon5)
-                    self.computer_vision.stop_audio()
+                    self.computer_vision.pause_audio(True)
+                    print('yrs')
                     break
 
                 if self.stop == True:
@@ -458,6 +472,8 @@ class Ui_MainWindow(object):
             self.stop = False
             self.pushButton_3.setIcon(self.icon8)
 
+
+
         elif self.start:
             self.start = False
             self.pause = True
@@ -483,13 +499,15 @@ class Ui_MainWindow(object):
         self.crop = False
         print('Loop break')
 
-    def position_changed(self):
+    def change_position(self, pos):
         """ This function get the duration manually to set the duration """
         self.horizontalSlider.setValue(self.position)
+        self.position = pos
 
     def set_position(self):
         """ This function get the duration to moving the bar values """
         self.horizontalSlider.setValue(self.position)
+
 
     def text_box(self):
         self.ML_label = self.lineEdit.text().lower()

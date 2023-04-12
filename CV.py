@@ -108,22 +108,33 @@ class Computer_Vision:
             return fileAddress
 
     def get_video(self):
+
         if self.fileAddress:
             #print(self.filename)
             self.video = cv2.VideoCapture(self.fileAddress)
             self.player = MediaPlayer(self.fileAddress)
-
         return self.video
+
     def get_audio(self, v):
-        print('get_volume: ',self.player.get_volume())
-        self.player.set_volume(80000)
         self.volume = v
-        print(v)
+        self.player.set_volume(self.volume / 100)
+
+    def set_mute(self):
+        playerVolume = self.player.get_volume()
+        #print('Volume = ', playerVolume)
+        if playerVolume == 0.0:
+            self.player.set_volume(1.0)
+            #print('Should now be unmuted')
+        else:
+            self.player.set_volume(0.0)
+            #print('Should now be muted')
+
+    def pause_audio(self, status = False):
+        self.player.set_pause(status)
 
     def stop_audio(self):
-        print('stop_audio ')
+        print('stop_audio')
         self.player.close_player()
-
 
     def get_duration(self, vid):
         return int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
