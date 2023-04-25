@@ -165,6 +165,10 @@ class Ui_MainWindow(object):
         self.pushButton_10.setMinimumSize(QtCore.QSize(40, 40))
         self.pushButton_10.setMaximumSize(QtCore.QSize(40, 40))
         self.pushButton_10.setText("")
+        icon21 = QtGui.QIcon()
+        icon21.addPixmap(QtGui.QPixmap(":/Gray/Gray/crop.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pushButton_10.setIcon(icon21)
+        self.pushButton_10.setIconSize(QtCore.QSize(25, 25))
         self.pushButton_10.setObjectName("pushButton_10")
         self.verticalLayout_2.addWidget(self.pushButton_10, 0, QtCore.Qt.AlignHCenter)
         self.gridLayout_4.addWidget(self.frame_8, 0, 0, 1, 1)
@@ -297,6 +301,7 @@ class Ui_MainWindow(object):
         self.comboBox.activated['int'].connect(self.set_video_speed) # type: ignore
         self.pushButton_7.clicked.connect(self.label.clear) ## type: ig
         self.pushButton_9.clicked.connect(self.crop_image_button) # type: ignore
+        self.pushButton_10.clicked.connect(self.crop_for_alarm_area)
         self.lineEdit.textEdited['QString'].connect(self.label.setText) # type: ignore
         self.pushButton_11.clicked.connect(self.text_box) # type: ignore
         self.horizontalSlider.sliderMoved.connect(self.set_position) # type: ignore
@@ -320,6 +325,7 @@ class Ui_MainWindow(object):
         self.point1 = ()
         self.point2 = ()
         self.crop = False
+        self.crop_for_alarm = False
         self.position = 0
         self.video = None
         self.address = True
@@ -390,6 +396,11 @@ class Ui_MainWindow(object):
     def crop_image_button(self):
         """ This function will allo o get 2 points for cropping image"""
         self.crop = True
+
+    def crop_for_alarm_area(self):
+        """ This function will allo o get 2 points for cropping image"""
+        self.crop_for_alarm = True
+        print(True)
 
 
     def loadVideo(self):
@@ -588,6 +599,10 @@ class MainWindow(QMainWindow, QtWidgets.QWidget):
                 # self.ui.computer_vision.create_rectangle( self.crop_points)
                 self.crop_points = []
                 self.ui.crop = False
+
+        if self.ui.crop_for_alarm:
+            self.crop_points.append((x, y))
+            self.ui.computer_vision.points01 = self.crop_points
     def keyPressEvent(self, e):  # doesnt work when app is in background
         if e.key() == Qt.key_Escape:
             self.close()

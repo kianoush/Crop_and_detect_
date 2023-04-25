@@ -24,6 +24,7 @@ class Computer_Vision:
         self.net = cv2.dnn.readNetFromCaffe(self.prototxt_path, self.model_path)
         self.ml_label = ml_label
         self.points = []
+        self.points01 = []
         self.crop_image_labels = []
         self.volume = volume
 ###########################################################################
@@ -165,6 +166,11 @@ class Computer_Vision:
             if self.CNT >= 100:
                 self.points = []
                 self.CNT = 0
+
+        if self.points01:
+            image = self.create_area(self.points01, image)
+            print(self.points01)
+
         if Computer_Vision.CNT == self.FRAMES_COUNT:
             try:  # To avoid divide by 0 we put it in try except
                 self.FPS = round(self.FRAMES_COUNT / (time.time() - self.ST))
@@ -180,5 +186,14 @@ class Computer_Vision:
         x1, y1 = point1
         x2, y2 = point2
         cv2.rectangle(image, (x1-(57), y1-(23)), (x2-20, y2), (0, 0, 255), 2)
+        return image
+
+    def create_area(self, points01, image):
+        # point1, point2 = points01
+        # x1, y1 = point1
+        # x2, y2 = point2
+
+        print(self.points01)
+        cv2.polylines(image, [self.points01], (255, 0, 0), 2)
         return image
 
